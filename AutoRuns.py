@@ -41,18 +41,18 @@ from org.sleuthkit.autopsy.modules.interestingitems import FilesSetsManager
 
 # Factory that defines the name and details of the module and allows Autopsy
 # to create instances of the modules that will do the analysis.
-class RegistryExampleIngestModuleFactory(IngestModuleFactoryAdapter):
+class AutoRunsIngestModuleFactory(IngestModuleFactoryAdapter):
 
     def __init__(self):
         self.settings = None
 
-    moduleName = "Registy Example Module"
+    moduleName = "Autorun Module"
     
     def getModuleDisplayName(self):
         return self.moduleName
     
     def getModuleDescription(self):
-        return "Extract Run Keys To Look For Interesting Items"
+        return "Extract Run Keys To Look For Files that Execute on Startup"
     
     def getModuleVersionNumber(self):
         return "1.0"
@@ -64,12 +64,12 @@ class RegistryExampleIngestModuleFactory(IngestModuleFactoryAdapter):
         return True
 
     def createDataSourceIngestModule(self, ingestOptions):
-        return RegistryExampleIngestModule(self.settings)
+        return AutoRunsIngestModule(self.settings)
 
 # Data Source-level ingest module.  One gets created per data source.
-class RegistryExampleIngestModule(DataSourceIngestModule):
+class AutoRunsIngestModule(DataSourceIngestModule):
 
-    _logger = Logger.getLogger(RegistryExampleIngestModuleFactory.moduleName)
+    _logger = Logger.getLogger(AutoRunsIngestModuleFactory.moduleName)
 
     def log(self, level, msg):
         self._logger.logp(level, self.__class__.__name__, inspect.stack()[1][3], msg)
@@ -80,7 +80,6 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
     # Where any setup and configuration is done
     def startUp(self, context):
         self.context = context
-        # Hive Keys to parse, use / as it is easier to parse out then \\
         self.registryNTUserRunKeys = ('Software/Microsoft/Windows/CurrentVersion/Run', 'Software/Microsoft/Windows/CurrentVersion/RunOnce')
         self.registrySoftwareRunKeys = ('Microsoft/Windows/CurrentVersion/Run', 'Microsoft/Windows/CurrentVersion/RunOnce')
         self.registryKeysFound = []
@@ -95,12 +94,12 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
         filesToExtract = ("NTUSER.DAT", "SOFTWARE")
         
         # Create ExampleRegistry directory in temp directory, if it exists then continue on processing		
-        tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "RegistryExample")
+        tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "AutorunsResults")
         self.log(Level.INFO, "create Directory " + tempDir)
         try:
             os.mkdir(tempDir)
         except:
-            self.log(Level.INFO, "ExampleRegistry Directory already exists " + tempDir)
+            self.log(Level.INFO, "AutorunsResult Directory already exists " + tempDir)
 
         # Set the database to be read to the once created by the prefetch parser program
         skCase = Case.getCurrentCase().getSleuthkitCase()
@@ -139,31 +138,31 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
  
        
         # Setup Artifact and Attributes
-        artType = skCase.getArtifactType("TSK_REGISTRY_RUN_KEYS")
+        artType = skCase.getArtifactType("TSK_AUTO_RUN_KEYS")
         if not artType:
             try:
-                artType = skCase.addBlackboardArtifactType( "TSK_REGISTRY_RUN_KEYS", "Registry Run Keys")
+                artType = skCase.addBlackboardArtifactType( "TSK_AUTO_RUN_KEYS", "Autorun keys")
             except:		
                 self.log(Level.WARNING, "Artifacts Creation Error, some artifacts may not exist now. ==> ")
           
         try:
-           attributeIdRunKeyName = skCase.addArtifactAttributeType("TSK_REG_RUN_KEY_NAME", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Run Key Name")
+           attributeIdRunKeyName = skCase.addArtifactAttributeType("TSK_PROGRAM_NAME", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Program Name")
         except:		
-           self.log(Level.INFO, "Attributes Creation Error, TSK_REG_RUN_KEY_NAME, May already exist. ")
-        try:
-           attributeIdRunKeyValue = skCase.addArtifactAttributeType("TSK_REG_RUN_KEY_VALUE", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Run Key Value")
-        except:		
-           self.log(Level.INFO, "Attributes Creation Error, TSK_REG_RUN_KEY_VALUE, May already exist. ")
+           self.log(Level.INFO, "Attributes Creation Error, TSK_PROGRAM_NAME, May already exist. ")
+        try:           
+           attributeIdRunKeyValue = skCase.addArtifactAttributeType("TSK_FILE_LOCATION", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "File Location")
+        except:		           
+           self.log(Level.INFO, "Attributes Creation Error, TSK_FILE_LOCATION, May already exist. ")
         try:
            attributeIdRegKeyLoc = skCase.addArtifactAttributeType("TSK_REG_KEY_LOCATION", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Registry Key Location")
         except:		
            self.log(Level.INFO, "Attributes Creation Error, TSK_REG_KEY_LOCATION, May already exist. ")
 
-        attributeIdRunKeyName = skCase.getAttributeType("TSK_REG_RUN_KEY_NAME")
-        attributeIdRunKeyValue = skCase.getAttributeType("TSK_REG_RUN_KEY_VALUE")
+        attributeIdRunKeyName = skCase.getAttributeType("TSK_PROGRAM_NAME")
+        attributeIdRunKeyValue = skCase.getAttributeType("TSK_FILE_LOCATION")
         attributeIdRegKeyLoc = skCase.getAttributeType("TSK_REG_KEY_LOCATION")
         
-        moduleName = RegistryExampleIngestModuleFactory.moduleName
+        moduleName = AutoRunsIngestModuleFactory.moduleName
         
         # RefistryKeysFound is a list that contains a list with the following records abstractFile, Registry Key Location, Key Name, Key value
         for registryKey in self.registryKeysFound:
@@ -180,7 +179,7 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
             except Blackboard.BlackboardException as ex:
                 self.log(Level.SEVERE, "Unable to index blackboard artifact " + str(art.getArtifactTypeName()), ex)
         
-		#Clean up registryExample directory and files
+		#Clean up module directory and files
         try:
             shutil.rmtree(tempDir)		
         except:
@@ -188,7 +187,7 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
  
         # After all databases, post a message to the ingest messages in box.
         message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "RegistryExample", " RegistryExample Files Have Been Analyzed " )
+            "AutoRuns", " Autoruns Files Have Been Analyzed " )
         IngestServices.getInstance().postMessage(message)
 
         return IngestModule.ProcessResult.OK                

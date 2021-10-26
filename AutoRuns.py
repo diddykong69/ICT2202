@@ -164,8 +164,8 @@ class AutoRunsIngestModule(DataSourceIngestModule):
             except:		
                 self.log(Level.WARNING, "Artifacts Creation Error, some artifacts may not exist now. ==> ")
           
-        try:
-           attributeIdRunKeyName = skCase.addArtifactAttributeType("TSK_PROGRAM_NAME", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Program Name")
+        try:           
+           attributeIdProgramName = skCase.addArtifactAttributeType("TSK_PROGRAM_NAME", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Program Name")
         except:		
            self.log(Level.INFO, "Attributes Creation Error, TSK_PROGRAM_NAME, May already exist. ")
         try:           
@@ -176,8 +176,8 @@ class AutoRunsIngestModule(DataSourceIngestModule):
            attributeIdRegKeyLoc = skCase.addArtifactAttributeType("TSK_REG_KEY_LOCATION", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Registry Key Location")
         except:		
            self.log(Level.INFO, "Attributes Creation Error, TSK_REG_KEY_LOCATION, May already exist. ")
-
-        attributeIdRunKeyName = skCase.getAttributeType("TSK_PROGRAM_NAME")
+        
+        attributeIdProgramName = skCase.getAttributeType("TSK_PROGRAM_NAME")
         attributeIdRunKeyValue = skCase.getAttributeType("TSK_FILE_LOCATION")
         attributeIdRegKeyLoc = skCase.getAttributeType("TSK_REG_KEY_LOCATION")
         
@@ -187,8 +187,8 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         for registryKey in self.registryKeysFound:
             self.log(Level.INFO, "Creating artifact for registry key with path: " + registryKey[1] + " and key: " + registryKey[2])
             art = registryKey[0].newDataArtifact(artType, Arrays.asList(
-                BlackboardAttribute(attributeIdRegKeyLoc, moduleName, registryKey[1]),
-                BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[2]),
+                BlackboardAttribute(attributeIdRegKeyLoc, moduleName, registryKey[1]),                
+                BlackboardAttribute(attributeIdProgramName, moduleName, registryKey[2]),
                 BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[3])
             ))
             

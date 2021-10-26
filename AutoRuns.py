@@ -1,3 +1,4 @@
+import jarray
 import inspect
 import os
 import shutil
@@ -36,6 +37,7 @@ from org.sleuthkit.autopsy.casemodule.services import Services
 from org.sleuthkit.autopsy.casemodule.services import FileManager
 from org.sleuthkit.autopsy.datamodel import ContentUtils
 from org.sleuthkit.autopsy.modules.interestingitems import FilesSetsManager
+from org.sleuthkit.datamodel import Score
 
 
 
@@ -91,7 +93,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         progressBar.switchToIndeterminate()
 
         # Hive files to extract        
-        filesToExtract = ("NTUSER.DAT", "SOFTWARE")
+        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/")
         
         # Create ExampleRegistry directory in temp directory, if it exists then continue on processing		
         tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "AutorunsResults")
@@ -108,7 +110,11 @@ class AutoRunsIngestModule(DataSourceIngestModule):
 
         # Look for files to process
         for fileName in filesToExtract:
-            files = fileManager.findFiles(dataSource, fileName)
+            if fileName == "%/Start Menu/Programs/Startup/":
+                files = fileManager.findFiles(dataSource, "%", fileName)
+            else:
+                files = fileManager.findFiles(dataSource, fileName)
+            filecount = 0
             numFiles = len(files)
 
             for file in files:
@@ -135,6 +141,19 @@ class AutoRunsIngestModule(DataSourceIngestModule):
  
                     # Process this file looking thru the run keys
                     self.processNTUserHive(os.path.join(tempDir, fileName), file)
+                else:
+                    filecount += 1
+                    attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                                                      AutoRunsIngestModuleFactory.moduleName,
+                                                      "Findings"))
+                    arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                         None, "Auto run at start", None, attrs).getAnalysisResult()
+                    try:
+                        blackboard.postArtifact(arts, AutoRunsIngestModuleFactory.moduleName)
+                    except Blackboard.BlackboardException as e:
+                        self.log(Level.SEVERE, "Error indexing artifact " + arts.getDisplayName())
+                        
+                    
  
        
         # Setup Artifact and Attributes
@@ -189,6 +208,9 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
             "AutoRuns", " Autoruns Files Have Been Analyzed " )
         IngestServices.getInstance().postMessage(message)
+        message1 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
+            "AutoRuns", " Found %d interesting files" % filecount)
+        IngestServices.getInstance().postMessage(message1)
 
         return IngestModule.ProcessResult.OK                
 

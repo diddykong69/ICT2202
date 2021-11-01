@@ -82,8 +82,8 @@ class AutoRunsIngestModule(DataSourceIngestModule):
     # Where any setup and configuration is done
     def startUp(self, context):
         self.context = context
-        self.registryNTUserRunKeys = ('Software/Microsoft/Windows/CurrentVersion/Run', 'Software/Microsoft/Windows/CurrentVersion/RunOnce')
-        self.registrySoftwareRunKeys = ('Microsoft/Windows/CurrentVersion/Run', 'Microsoft/Windows/CurrentVersion/RunOnce')
+        self.registryNTUserRunKeys = ('Software/Microsoft/Windows/CurrentVersion/Run', 'Software/Microsoft/Windows/CurrentVersion/RunOnce', 'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Software/Microsoft/Windows/CurrentVersion/Explorer/Shell Folders')
+        self.registrySoftwareRunKeys = ('Microsoft/Windows/CurrentVersion/Run', 'Microsoft/Windows/CurrentVersion/RunOnce', 'Microsoft/Windows/CurrentVersion/Explorer/Shell Folders', 'Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders')
         self.registryKeysFound = []
 
     # Where the analysis is done.

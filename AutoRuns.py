@@ -93,7 +93,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         progressBar.switchToIndeterminate()
 
         # Hive files to extract        
-        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/")
+        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/", "%/System32/Tasks/")
         
         # Create ExampleRegistry directory in temp directory, if it exists then continue on processing		
         tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "AutorunsResults")
@@ -112,6 +112,8 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         for fileName in filesToExtract:
             if fileName == "%/Start Menu/Programs/Startup/":
                 files = fileManager.findFiles(dataSource, "%", fileName)
+            elif fileName == "%/System32/Tasks/":
+                files = fileManager.findFiles(dataSource, "%", fileName)
             else:
                 files = fileManager.findFiles(dataSource, fileName)
             filecount = 0
@@ -127,20 +129,21 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                 if ((file.getName() == 'SOFTWARE') and (file.getParentPath().upper() == '/WINDOWS/SYSTEM32/CONFIG/') and (file.getSize() > 0)):    
                     # Save the file locally in the temp folder. 
                     self.writeHiveFile(file, file.getName(), tempDir)
-              
+                  
                     # Process this file looking thru the run keys
                     self.processSoftwareHive(os.path.join(tempDir, file.getName()), file)
                     
                 elif ((file.getName() == 'NTUSER.DAT') and ('/USERS' in file.getParentPath().upper()) and (file.getSize() > 0)):
                 # Found a NTUSER.DAT file to process only want files in User directories
-                    # Filename may not be unique so add file id to the name
+                    # Filename may not be unique so add file id to the name                    
                     fileName = str(file.getId()) + "-" + file.getName()                    
                     
                     # Save the file locally in the temp folder.
                     self.writeHiveFile(file, fileName, tempDir)
- 
+     
                     # Process this file looking thru the run keys
                     self.processNTUserHive(os.path.join(tempDir, fileName), file)
+
                 else:
                     filecount += 1
                     attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,

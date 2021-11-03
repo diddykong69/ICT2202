@@ -93,7 +93,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         progressBar.switchToIndeterminate()
 
         # Hive files to extract        
-        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/", "%/System32/Tasks/")
+        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/", "%/System32/Tasks/", "%/Windows/Prefetch/")
         
         # Create ExampleRegistry directory in temp directory, if it exists then continue on processing		
         tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "AutorunsResults")
@@ -113,6 +113,8 @@ class AutoRunsIngestModule(DataSourceIngestModule):
             if fileName == "%/Start Menu/Programs/Startup/":
                 files = fileManager.findFiles(dataSource, "%", fileName)
             elif fileName == "%/System32/Tasks/":
+                files = fileManager.findFiles(dataSource, "%", fileName)
+            elif fileName == "%/Windows/Prefetch/":
                 files = fileManager.findFiles(dataSource, "%", fileName)
             else:
                 files = fileManager.findFiles(dataSource, fileName)
@@ -145,10 +147,19 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                     self.processNTUserHive(os.path.join(tempDir, fileName), file)
 
                 else:
-                    filecount += 1
-                    attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                    if fileName == "%/Windows/Prefetch/":
+                        attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
-                                                      "Findings"))
+                                                      "Prefetch"))
+                    elif fileName == "%/System32/Tasks/":
+                        attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                                                      AutoRunsIngestModuleFactory.moduleName,
+                                                      "Tasks"))
+                    else:
+                        attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                                                      AutoRunsIngestModuleFactory.moduleName,
+                                                      "Startup"))
+                    filecount += 1
                     arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
                                          None, "Auto run at start", None, attrs).getAnalysisResult()
                     try:

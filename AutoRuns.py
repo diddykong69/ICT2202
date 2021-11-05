@@ -93,7 +93,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         progressBar.switchToIndeterminate()
 
         # Hive files to extract        
-        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/", "%/System32/Tasks/", "%/Windows/Prefetch/")
+        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/", "%/System32/Tasks/", "%/Windows/Prefetch/", "%windows/system32/winevt/Logs")
         
         # Create ExampleRegistry directory in temp directory, if it exists then continue on processing		
         tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "AutorunsResults")
@@ -151,26 +151,39 @@ class AutoRunsIngestModule(DataSourceIngestModule):
 
                 else:
                     if fileName == "%/Windows/Prefetch/":
-                        prefetchcount += 1
+                        prefetchcount += 1                        
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
                                                       "Prefetch"))
                         arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
                                          None, "Prefetch files", None, attrs).getAnalysisResult()                        
                     elif fileName == "%/System32/Tasks/":
+                        # if fileName == "%/." or "%/..":
+                            # break
+                        # else:
                         taskscount += 1
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
                                                       "Tasks"))
                         arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
-                                         None, "Auto run at start", None, attrs).getAnalysisResult()
+                                         None, "Scheduled tasks", None, attrs).getAnalysisResult()
+                    elif fileName == "%windows/system32/winevt/Logs":
+                        taskscount += 1
+                        attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                                                      AutoRunsIngestModuleFactory.moduleName,
+                                                      "Window Event logs"))
+                        arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                         None, "Window Event Logs", None, attrs).getAnalysisResult()
                     else:
+                        # if fileName == "%/." or "%/..":
+                            # break
+                        # else:
                         startupcount += 1
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
                                                       "Startup"))
                         arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
-                                         None, "Auto run at start", None, attrs).getAnalysisResult()                        
+                                         None, "Auto run files", None, attrs).getAnalysisResult()                        
                     filecount += 1
                     
                     try:

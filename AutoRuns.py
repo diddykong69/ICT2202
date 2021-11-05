@@ -158,15 +158,15 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                         arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
                                          None, "Prefetch files", None, attrs).getAnalysisResult()                        
                     elif fileName == "%/System32/Tasks/":
-                        # if fileName == "%/." or "%/..":
-                            # break
-                        # else:
-                        taskscount += 1
-                        attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
-                                                      AutoRunsIngestModuleFactory.moduleName,
-                                                      "Tasks"))
-                        arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
-                                         None, "Scheduled tasks", None, attrs).getAnalysisResult()
+                        if file.getName() == "." or  file.getName() == "..":
+                            continue
+                        else:
+                            taskscount += 1
+                            attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                                                          AutoRunsIngestModuleFactory.moduleName,
+                                                          "Tasks"))
+                            arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                             None, "Scheduled tasks", None, attrs).getAnalysisResult()
                     elif fileName == "%windows/system32/winevt/Logs":
                         taskscount += 1
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
@@ -175,15 +175,16 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                         arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
                                          None, "Window Event Logs", None, attrs).getAnalysisResult()
                     else:
-                        # if fileName == "%/." or "%/..":
-                            # break
-                        # else:
-                        startupcount += 1
-                        attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
-                                                      AutoRunsIngestModuleFactory.moduleName,
-                                                      "Startup"))
-                        arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
-                                         None, "Auto run files", None, attrs).getAnalysisResult()                        
+                        if file.getName() == ".." or file.getName() == ".":
+                            continue
+                        else:
+                            startupcount += 1
+                            self.log(Level.INFO, "test4" + file.getName())
+                            attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                                                          AutoRunsIngestModuleFactory.moduleName,
+                                                          "Startup"))
+                            arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                             None, "Auto run files", None, attrs).getAnalysisResult()                        
                     filecount += 1
                     
                     try:

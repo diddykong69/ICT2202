@@ -93,7 +93,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         progressBar.switchToIndeterminate()
 
         # Hive files to extract        
-        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/", "%/System32/Tasks/", "%/Windows/Prefetch/", "%windows/system32/winevt/Logs")
+        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "%/Start Menu/Programs/Startup/", "%/System32/Tasks/", "%/Windows/Prefetch/", "%/Windows/System32/winevt/Logs/")
         
         # Create ExampleRegistry directory in temp directory, if it exists then continue on processing		
         tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "AutorunsResults")
@@ -119,6 +119,8 @@ class AutoRunsIngestModule(DataSourceIngestModule):
             elif fileName == "%/System32/Tasks/":
                 files = fileManager.findFiles(dataSource, "%", fileName)
             elif fileName == "%/Windows/Prefetch/":
+                files = fileManager.findFiles(dataSource, "%", fileName)
+            elif fileName == "%/Windows/System32/winevt/Logs/":
                 files = fileManager.findFiles(dataSource, "%", fileName)
             else:
                 files = fileManager.findFiles(dataSource, fileName)
@@ -167,7 +169,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                                                           "Tasks"))
                             arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
                                              None, "Scheduled tasks", None, attrs).getAnalysisResult()
-                    elif fileName == "%windows/system32/winevt/Logs":
+                    elif fileName == "%/Windows/System32/winevt/Logs/":
                         taskscount += 1
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
@@ -178,8 +180,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                         if file.getName() == ".." or file.getName() == ".":
                             continue
                         else:
-                            startupcount += 1
-                            self.log(Level.INFO, "test4" + file.getName())
+                            startupcount += 1                            
                             attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                           AutoRunsIngestModuleFactory.moduleName,
                                                           "Startup"))
@@ -224,7 +225,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         
         # RefistryKeysFound is a list that contains a list with the following records abstractFile, Registry Key Location, Key Name, Key value
         for registryKey in self.registryKeysFound:
-            self.log(Level.INFO, "Creating artifact for registry key with path: " + registryKey[1] + " and key: " + registryKey[2])
+            # self.log(Level.INFO, "Creating artifact for registry key with path: " + registryKey[1] + " and key: " + registryKey[2])
             art = registryKey[0].newDataArtifact(artType, Arrays.asList(
                 BlackboardAttribute(attributeIdRegKeyLoc, moduleName, registryKey[1]),                
                 BlackboardAttribute(attributeIdProgramName, moduleName, registryKey[2]),

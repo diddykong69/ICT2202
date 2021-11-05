@@ -48,13 +48,13 @@ class AutoRunsIngestModuleFactory(IngestModuleFactoryAdapter):
     def __init__(self):
         self.settings = None
 
-    moduleName = "Autorun Module"
+    moduleName = "Autoruns Module"
     
     def getModuleDisplayName(self):
         return self.moduleName
     
     def getModuleDescription(self):
-        return "Extract Run Keys To Look For Files that Execute on Startup"
+        return "A module that parses registry and file location where traces of malware usually reside in"
     
     def getModuleVersionNumber(self):
         return "1.0"
@@ -246,24 +246,18 @@ class AutoRunsIngestModule(DataSourceIngestModule):
             self.log(Level.INFO, "removal of directory tree failed " + tempDir)
  
         # After all databases, post a message to the ingest messages in box.
-        message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "AutoRuns", " Autoruns Files Have Been Analyzed " )
-        IngestServices.getInstance().postMessage(message)
-        # message1 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            # "AutoRuns", " Found %d interesting files" % filecount)
-        # IngestServices.getInstance().postMessage(message1)
         message1 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "AutoRuns", " Found %d startup files" % startupcount)
-        IngestServices.getInstance().postMessage(message1)
+            "AutoRuns", " Found %d startup files" % startupcount)                
+        self.log(Level.INFO, "Found %d startup files " % startupcount)
         message2 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "AutoRuns", " Found %d scheduled task files" % taskscount)
-        IngestServices.getInstance().postMessage(message2)
+            "AutoRuns", " Found %d scheduled task files" % taskscount)        
+        self.log(Level.INFO, "Found %d scheduled task files " % taskscount)
         message3 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "AutoRuns", " Found %d prefetch files" % prefetchcount)
-        IngestServices.getInstance().postMessage(message3)
+            "AutoRuns", " Found %d prefetch files" % prefetchcount)        
+        self.log(Level.INFO, "Found %d prefetch files " % prefetchcount)
         message4 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "AutoRuns", " Found %d windows event log files" % winevtcount)
-        IngestServices.getInstance().postMessage(message4)
+            "AutoRuns", " Found %d windows event log files" % winevtcount)        
+        self.log(Level.INFO, "Found %d windows event log files " % winevtcount)
 
         return IngestModule.ProcessResult.OK                
 
@@ -291,8 +285,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                     self.registryKeysFound.append(regKey)
                     
 
-    def processNTUserHive(self, ntuserHive, abstractFile):
-    
+    def processNTUserHive(self, ntuserHive, abstractFile):    
         # Open the registry hive file 
         ntuserRegFile = RegistryHiveFile(File(ntuserHive))
         for runKey in self.registryNTUserRunKeys:

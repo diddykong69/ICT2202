@@ -109,6 +109,10 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         fileManager = Case.getCurrentCase().getServices().getFileManager()
 
         # Look for files to process
+        startupcount = 0
+        prefetchcount = 0
+        taskscount = 0
+        filecount = 0
         for fileName in filesToExtract:
             if fileName == "%/Start Menu/Programs/Startup/":
                 files = fileManager.findFiles(dataSource, "%", fileName)
@@ -118,7 +122,6 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                 files = fileManager.findFiles(dataSource, "%", fileName)
             else:
                 files = fileManager.findFiles(dataSource, fileName)
-            filecount = 0
             numFiles = len(files)
 
             for file in files:
@@ -148,20 +151,28 @@ class AutoRunsIngestModule(DataSourceIngestModule):
 
                 else:
                     if fileName == "%/Windows/Prefetch/":
+                        prefetchcount += 1
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
                                                       "Prefetch"))
+                        arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                         None, "Prefetch files", None, attrs).getAnalysisResult()                        
                     elif fileName == "%/System32/Tasks/":
+                        taskscount += 1
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
                                                       "Tasks"))
+                        arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                         None, "Auto run at start", None, attrs).getAnalysisResult()
                     else:
+                        startupcount += 1
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
                                                       "Startup"))
+                        arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                         None, "Auto run at start", None, attrs).getAnalysisResult()                        
                     filecount += 1
-                    arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
-                                         None, "Auto run at start", None, attrs).getAnalysisResult()
+                    
                     try:
                         blackboard.postArtifact(arts, AutoRunsIngestModuleFactory.moduleName)
                     except Blackboard.BlackboardException as e:
@@ -222,9 +233,18 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
             "AutoRuns", " Autoruns Files Have Been Analyzed " )
         IngestServices.getInstance().postMessage(message)
+        # message1 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
+            # "AutoRuns", " Found %d interesting files" % filecount)
+        # IngestServices.getInstance().postMessage(message1)
         message1 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "AutoRuns", " Found %d interesting files" % filecount)
+            "AutoRuns", " Found %d startup files" % startupcount)
         IngestServices.getInstance().postMessage(message1)
+        message2 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
+            "AutoRuns", " Found %d scheduled task files" % taskscount)
+        IngestServices.getInstance().postMessage(message2)
+        message3 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
+            "AutoRuns", " Found %d prefetch files" % prefetchcount)
+        IngestServices.getInstance().postMessage(message3)
 
         return IngestModule.ProcessResult.OK                
 

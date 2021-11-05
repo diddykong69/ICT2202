@@ -113,6 +113,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         prefetchcount = 0
         taskscount = 0
         filecount = 0
+        winevtcount = 0
         for fileName in filesToExtract:
             if fileName == "%/Start Menu/Programs/Startup/":
                 files = fileManager.findFiles(dataSource, "%", fileName)
@@ -170,7 +171,7 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                             arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
                                              None, "Scheduled tasks", None, attrs).getAnalysisResult()
                     elif fileName == "%/Windows/System32/winevt/Logs/":
-                        taskscount += 1
+                        winevtcount += 1
                         attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
                                                       AutoRunsIngestModuleFactory.moduleName,
                                                       "Window Event logs"))
@@ -260,6 +261,9 @@ class AutoRunsIngestModule(DataSourceIngestModule):
         message3 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
             "AutoRuns", " Found %d prefetch files" % prefetchcount)
         IngestServices.getInstance().postMessage(message3)
+        message4 = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
+            "AutoRuns", " Found %d windows event log files" % winevtcount)
+        IngestServices.getInstance().postMessage(message4)
 
         return IngestModule.ProcessResult.OK                
 

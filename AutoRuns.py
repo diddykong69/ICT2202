@@ -154,12 +154,15 @@ class AutoRunsIngestModule(DataSourceIngestModule):
 
                 else:
                     if fileName == "%/Windows/Prefetch/":
-                        prefetchcount += 1                        
-                        attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
-                                                      AutoRunsIngestModuleFactory.moduleName,
-                                                      "Prefetch"))
-                        arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
-                                         None, "Prefetch files", None, attrs).getAnalysisResult()                        
+                        if file.getName() == "." or  file.getName() == "..":
+                            continue
+                        else:
+                            prefetchcount += 1                        
+                            attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                                                          AutoRunsIngestModuleFactory.moduleName,
+                                                          "Prefetch"))
+                            arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                             None, "Prefetch files", None, attrs).getAnalysisResult()                        
                     elif fileName == "%/System32/Tasks/":
                         if file.getName() == "." or  file.getName() == "..":
                             continue
@@ -171,12 +174,15 @@ class AutoRunsIngestModule(DataSourceIngestModule):
                             arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
                                              None, "Scheduled tasks", None, attrs).getAnalysisResult()
                     elif fileName == "%/Windows/System32/winevt/Logs/":
-                        winevtcount += 1
-                        attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
-                                                      AutoRunsIngestModuleFactory.moduleName,
-                                                      "Window Event logs"))
-                        arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
-                                         None, "Window Event Logs", None, attrs).getAnalysisResult()
+                        if file.getName() == "." or  file.getName() == "..":
+                            continue
+                        else:
+                            winevtcount += 1
+                            attrs = Arrays.asList(BlackboardAttribute(BlackboardAttribute.Type.TSK_SET_NAME,
+                                                          AutoRunsIngestModuleFactory.moduleName,
+                                                          "Window Event logs"))
+                            arts = file.newAnalysisResult(BlackboardArtifact.Type.TSK_INTERESTING_FILE_HIT, Score.SCORE_LIKELY_NOTABLE,
+                                             None, "Window Event Logs", None, attrs).getAnalysisResult()
                     else:
                         if file.getName() == ".." or file.getName() == ".":
                             continue

@@ -10,4 +10,4 @@ Download the Autoruns.py file to a folder in your Autopsy's python module direct
 
 After the module finishes loading, the results will be stored as an Autopsy Blackboard artifact on the left hand side of the UI.
 
-![image](https://user-images.githubusercontent.com/46297054/140603749-483f5f87-551e-4006-970a-e94556eb72d4.png)
+![image](https://user-images.githubusercontent.com/46297054/140605093-a5c692ce-df69-4111-ac5c-bb4d04400263.png)
